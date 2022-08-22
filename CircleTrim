@@ -1,0 +1,40 @@
+;-----------------------------------------------------------------------------------------------------------------------------------------------
+; Created by Zackary Reeve	Date: 08/19/2022	Function: Remove all lines crossing through a circle		Email: ztreeve@gmail.com
+;-----------------------------------------------------------------------------------------------------------------------------------------------
+
+(defun c:cirtrim()						; Defines function name
+  					
+  (setq circleSel (ssget (list (cons 0 "circle"))))		; User selection box - filter circles only for selection set				
+  (setq numCircles (sslength circleSel))			; Number of circles in ss
+
+  (setq i 0)							; Iteration counter initiation
+  (while (< i numCircles)					; Loops once for every circle
+    
+    (setq name (ssname circleSel i))				; Entity name of circle
+    (setq info (entget name))					; attributes of circle
+  
+    (setq rad (cdr (assoc 40 info)))				; Radius
+    (setq xcent (cadr (assoc 10 info)))				; x center point
+    (setq ycent (caddr (assoc 10 info)))			; y center point
+    (setq fencePoints 24)					; Number of Fence Points
+    (setq theta (/ (* pi 2) fencePoints))			; angle between lines going to fp
+    (setq phi 0)						; cumulative angle for while loop
+  
+    (command ".trim" "o" "s" name "" "F")			; Starts Trim function (standard Fence Mode)	
+								
+    (while (< phi (+ theta (* pi 2)))				; Finds coordinates for trim fence loop around circle perimeter
+      (setq xstr (rtos (+ xcent (* rad (cos phi))) 2 4))	; xcoord string	
+      (setq ystr (rtos (+ ycent (* rad (sin phi))) 2 4)) 	; ycoord string
+      (setq coords (strcat xstr "," ystr))			; "xcoord,ycoord" for command input
+      (command coords)						; Trim command input of fence coords
+      (setq phi (+ phi theta))					; Increase angle by theta for next iteration
+    ) ;While
+
+    (command "" (command))					; Ends trim function
+
+    (setq i (1+ i))						; increments counter for loop
+  ) ;While
+  
+) ;end
+
+;------------------------------------------- End of Script ---------------------------------------------------------------------------------
